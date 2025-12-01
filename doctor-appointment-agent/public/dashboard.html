@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Doctor Appointment Dashboard</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    h1 { margin-bottom: 4px; }
+    p.subtitle { margin-top: 0; color: #555; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; font-size: 14px; }
+    th { background: #f4f4f4; }
+    .status-confirmed { color: green; font-weight: bold; }
+    .status-pending { color: orange; font-weight: bold; }
+    .status-cancelled { color: red; font-weight: bold; }
+    .status-rescheduled { color: #3366ff; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Appointments</h1>
+  <p class="subtitle">AI-powered WhatsApp scheduling — demo dashboard</p>
+  <button onclick="loadAppointments()">Refresh</button>
+  <table id="appointmentsTable">
+    <thead>
+      <tr>
+        <th>Patient</th>
+        <th>Phone</th>
+        <th>Date/Time</th>
+        <th>Reason</th>
+        <th>Urgency</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    async function loadAppointments() {
+      try {
+        const res = await fetch('/api/appointments');
+        const data = await res.json();
+        const tbody = document.querySelector('#appointmentsTable tbody');
+        tbody.innerHTML = '';
+
+        (data.appointments || [])
+          .sort((a, b) => (a.appointmentDateTime || '').localeCompare(b.appointmentDateTime || ''))
+          .forEach(a => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${a.patientName || 'Unknown'}</td>
+              <td>${a.phoneNumber || ''}</td>
+              <td>${a.appointmentDateTime || '-'}</td>
+              <td>${a.reason || ''}</td>
+              <td>${a.urgencyLevel || ''}</td>
+              <td class="status-${a.status}">${a.status}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+      } catch (e) {
+        console.error('Failed to load appointments', e);
+      }
+    }
+
+    loadAppointments();
+    setInterval(loadAppointments, 15000);
+  </script>
+</body>
+</html>
