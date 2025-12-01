@@ -1,0 +1,149 @@
+{
+  "name": "Doctor Appointment WhatsApp Flow (MVP Skeleton)",
+  "nodes": [
+    {
+      "id": "webhook_whatsapp_in",
+      "name": "WhatsApp Inbound",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "twilio-whatsapp",
+        "responseMode": "onReceived",
+        "responseData": "default",
+        "options": {}
+      }
+    },
+    {
+      "id": "fn_parse_twilio",
+      "name": "Parse Twilio Message",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ],
+      "parameters": {
+        "functionCode": "const body = items[0].json;\nreturn [{\n  json: {\n    from: body.From,\n    mediaUrl: body.MediaUrl0,\n    mediaContentType: body.MediaContentType0\n  }\n}];"
+      }
+    },
+    {
+      "id": "http_download_audio",
+      "name": "Download Audio from Twilio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        650,
+        300
+      ],
+      "parameters": {
+        "url": "={{$json[\"mediaUrl\"]}}",
+        "responseFormat": "file",
+        "options": {}
+      }
+    },
+    {
+      "id": "http_whisper_stt",
+      "name": "Transcribe with Whisper",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        850,
+        300
+      ],
+      "parameters": {
+        "url": "https://api.openai.com/v1/audio/transcriptions",
+        "method": "POST",
+        "sendBinaryData": true,
+        "binaryPropertyName": "data",
+        "authentication": "none",
+        "options": {
+          "bodyContentType": "form-data",
+          "bodyParametersUi": {
+            "parameter": [
+              {
+                "name": "model",
+                "value": "whisper-1"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "http_interpret_intent",
+      "name": "Interpret Intent (Backend)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1050,
+        300
+      ],
+      "parameters": {
+        "url": "http://localhost:3000/api/interpret-intent",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\"transcript\": $json[\"text\"], \"phoneNumber\": $item(0).$node[\"Parse Twilio Message\"].json[\"from\"]}"
+      }
+    }
+  ],
+  "connections": {
+    "WhatsApp Inbound": {
+      "main": [
+        [
+          {
+            "node": "Parse Twilio Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Twilio Message": {
+      "main": [
+        [
+          {
+            "node": "Download Audio from Twilio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Audio from Twilio": {
+      "main": [
+        [
+          {
+            "node": "Transcribe with Whisper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe with Whisper": {
+      "main": [
+        [
+          {
+            "node": "Interpret Intent (Backend)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "versionId": "1",
+  "meta": {
+    "template": {
+      "name": "Doctor Appointment WhatsApp Flow (MVP Skeleton)",
+      "version": "0.1.0"
+    }
+  }
+}
