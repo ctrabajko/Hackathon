@@ -423,6 +423,7 @@
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 6px;
+      align-items: start; /* prevent items from stretching vertically */
     }
 
     .flow-step {
@@ -435,7 +436,7 @@
       align-items: center;
       gap: 6px;
       color: var(--text-muted);
-      align-self: flex-start; /* prevent stretching to full column height */
+      align-self: start; /* explicit per-item override */
     }
 
     .flow-step span.step-index {
