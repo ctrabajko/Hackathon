@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI-Powered Doctor Office Appointment Automation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap"
+    rel="stylesheet"
+  >
+
+  <style>
+    :root {
+      --bg: #020617;
+      --bg-alt: #030712;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.12);
+      --accent-strong: #0ea5e9;
+      --accent-2: #a855f7;
+      --card-bg: rgba(15, 23, 42, 0.9);
+      --card-border: rgba(148, 163, 184, 0.25);
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --text-soft: #6b7280;
+      --danger: #fb7185;
+      --success: #4ade80;
+      --shadow-soft: 0 24px 60px rgba(15, 23, 42, 0.7);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --blur-glass: 22px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text-main);
+      background: radial-gradient(circle at top, #0f172a 0, #020617 55%, #000 100%);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 16px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Decorative blobs */
+    .blob {
+      position: fixed;
+      border-radius: 999px;
+      filter: blur(70px);
+      opacity: 0.5;
+      z-index: -1;
+      pointer-events: none;
+    }
+    .blob--one {
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, #38bdf8, transparent 60%);
+      top: -80px;
+      right: -40px;
+    }
+    .blob--two {
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, #a855f7, transparent 60%);
+      bottom: -100px;
+      left: -40px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .logo-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background:
+        conic-gradient(from 210deg, #38bdf8, #a855f7, #22c55e, #eab308, #38bdf8);
+      padding: 2px;
+      box-shadow: 0 10px 40px rgba(56, 189, 248, 0.5);
+    }
+
+    .logo-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background: radial-gradient(circle at 30% 30%, #020617, #020617 60%, #0b1120);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #e5e7eb;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .logo-text-main {
+      font-weight: 600;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #e5e7eb;
+    }
+
+    .logo-text-sub {
+      font-size: 11px;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+    }
+
+    .tagline-chip {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: radial-gradient(circle at 0 0, rgba(56,189,248,0.25), transparent 60%);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tagline-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: radial-gradient(circle, var(--success), #16a34a);
+      box-shadow: 0 0 10px rgba(74, 222, 128, 0.7);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .nav-button {
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.7));
+      color: var(--text-main);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s ease;
+    }
+
+    .nav-button span.icon {
+      font-size: 14px;
+    }
+
+    .nav-button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(148, 163, 184, 0.7);
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.65);
+    }
+
+    .nav-button.primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border: none;
+      color: #0b1120;
+      font-weight: 600;
+      box-shadow:
+        0 14px 40px rgba(56, 189, 248, 0.6),
+        0 0 0 1px rgba(15,23,42,0.8) inset;
+    }
+
+    .nav-button.primary:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1.5px) scale(1.01);
+    }
+
+    /* Layout */
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+      gap: 26px;
+      align-items: flex-start;
+    }
+
+    /* Hero section */
+    .hero {
+      padding: 22px 22px 20px;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--card-border);
+      background:
+        radial-gradient(circle at 0 0, rgba(56,189,248,0.16), transparent 55%),
+        radial-gradient(circle at 100% 0, rgba(168,85,247,0.14), transparent 55%),
+        rgba(15,23,42,0.92);
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 1px;
+      border-radius: inherit;
+      border: 1px solid rgba(15,23,42,0.8);
+      pointer-events: none;
+    }
+
+    .hero-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 18px;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--accent-strong);
+      margin-bottom: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .eyebrow-badge {
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(56,189,248,0.6);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--accent);
+    }
+
+    .hero-title {
+      font-size: clamp(26px, 4vw, 34px);
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+      margin-bottom: 8px;
+    }
+
+    .hero-gradient-text {
+      background: linear-gradient(135deg, #f9fafb, #e5e7eb, #38bdf8);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .hero-highlight {
+      color: var(--accent-2);
+    }
+
+    .hero-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 620px;
+    }
+
+    .hero-subtitle strong {
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+
+    .hero-pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 18px;
+    }
+
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: var(--text-soft);
+    }
+
+    .hero-pill-tag {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: radial-gradient(circle, #f97316, #ea580c);
+    }
+
+    .hero-pill strong {
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    .hero-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .metric {
+      min-width: 110px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      background: radial-gradient(circle at 0 0, rgba(148,163,184,0.16), transparent 60%);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-soft);
+    }
+
+    .metric-value {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .metric-value span {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+
+    .metric-tag {
+      font-size: 11px;
+      color: var(--accent);
+    }
+
+    .hero-footer {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 14px;
+      align-items: stretch;
+      margin-top: 10px;
+    }
+
+    .flow-card {
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: linear-gradient(135deg, rgba(15,23,42,0.96), rgba(15,23,42,0.78));
+      padding: 12px 12px 10px;
+    }
+
+    .flow-title-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .flow-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-muted);
+    }
+
+    .flow-pill {
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: rgba(8,47,73,0.9);
+      border: 1px solid rgba(56, 189, 248, 0.7);
+      color: #e0f2fe;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .flow-pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: radial-gradient(circle, #22c55e, #16a34a);
+    }
+
+    .flow-steps {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .flow-step {
+      border-radius: 999px;
+      padding: 7px 8px;
+      font-size: 11px;
+      background: radial-gradient(circle at 0 0, rgba(15,23,42,0.98), rgba(15,23,42,0.8));
+      border: 1px solid rgba(31, 41, 55, 0.8);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+    }
+
+    .flow-step span.step-index {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      background: radial-gradient(circle, rgba(15,23,42,1), rgba(15,23,42,0.9));
+      border: 1px solid rgba(148,163,184,0.6);
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .flow-step strong {
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    .stack-card {
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background:
+        radial-gradient(circle at 0 100%, rgba(56,189,248,0.15), transparent 55%),
+        linear-gradient(145deg, rgba(15,23,42,0.98), rgba(15,23,42,0.7));
+      padding: 12px 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .stack-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .stack-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-muted);
+    }
+
+    .stack-badge {
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.5);
+      background: rgba(15,23,42,0.92);
+      color: var(--text-soft);
+    }
+
+    .stack-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .stack-chip {
+      font-size: 11px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.94);
+      border: 1px solid rgba(30, 64, 175, 0.8);
+      color: #e5e7eb;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .stack-chip span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: radial-gradient(circle, #38bdf8, #0284c7);
+    }
+
+    .stack-chip.secondary {
+      border-color: rgba(147, 51, 234, 0.8);
+    }
+
+    .stack-chip.secondary span.dot {
+      background: radial-gradient(circle, #a855f7, #7e22ce);
+    }
+
+    .stack-chip.aux span.dot {
+      background: radial-gradient(circle, #facc15, #eab308);
+    }
+
+    /* Right Column: panels */
+    .panels {
+      display: grid;
+      grid-template-rows: auto auto;
+      gap: 16px;
+    }
+
+    .panel {
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--card-border);
+      background: rgba(15,23,42,0.92);
+      backdrop-filter: blur(var(--blur-glass));
+      box-shadow: var(--shadow-soft);
+      padding: 16px 16px 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 0 0, rgba(56,189,248,0.15), transparent 55%);
+      pointer-events: none;
+      opacity: 0.85;
+    }
+
+    .panel-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .panel-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-muted);
+    }
+
+    .panel-chip {
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      background: rgba(15,23,42,0.98);
+      color: var(--text-soft);
+    }
+
+    .links-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .link-card {
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      background:
+        radial-gradient(circle at 0 0, rgba(15,23,42,0.98), rgba(15,23,42,0.9));
+      padding: 9px 9px 8px;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .link-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-soft);
+    }
+
+    .link-main {
+      font-size: 12px;
+      font-weight: 500;
+      color: #e5e7eb;
+    }
+
+    .link-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .link-url {
+      font-size: 11px;
+      color: var(--accent);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .link-url a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .link-url a:hover {
+      text-decoration: underline;
+    }
+
+    .status-pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .status-pill {
+      font-size: 10px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      background: rgba(15,23,42,0.98);
+      color: var(--text-soft);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: radial-gradient(circle, #22c55e, #16a34a);
+    }
+
+    .status-dot.warning {
+      background: radial-gradient(circle, #f97316, #ea580c);
+    }
+
+    .status-dot.neutral {
+      background: radial-gradient(circle, #38bdf8, #0ea5e9);
+    }
+
+    .divider {
+      margin: 10px 0 8px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(148,163,184,0.6), transparent);
+    }
+
+    /* QR / Demo panel */
+    .qr-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .demo-script {
+      border-radius: var(--radius-md);
+      border: 1px dashed rgba(148, 163, 184, 0.6);
+      background: radial-gradient(circle at 0 100%, rgba(56,189,248,0.12), transparent 55%);
+      padding: 10px 11px;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .demo-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-soft);
+    }
+
+    .demo-list {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .demo-list li {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      margin-bottom: 4px;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .demo-step-number {
+      font-size: 11px;
+      color: var(--accent);
+      margin-top: 1px;
+    }
+
+    .demo-highlight {
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+
+    .qr-card {
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background:
+        radial-gradient(circle at 0 0, rgba(8,47,73,0.9), transparent 60%),
+        rgba(15,23,42,0.98);
+      padding: 10px 11px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .qr-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+    }
+
+    .qr-image-wrapper {
+      width: 120px;
+      height: 120px;
+      border-radius: 18px;
+      padding: 8px;
+      background:
+        radial-gradient(circle at 0 0, rgba(56, 189, 248, 0.3), transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.3), transparent 50%),
+        rgba(15,23,42,1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 2px 0;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+    }
+
+    .qr-image-wrapper img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 14px;
+      object-fit: cover;
+      background: #020617;
+    }
+
+    .qr-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      max-width: 200px;
+    }
+
+    .qr-note strong {
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+
+    /* Footer */
+    footer {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto 16px;
+      padding: 0 16px;
+      font-size: 11px;
+      color: var(--text-soft);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .nav-links {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .panels {
+        grid-template-rows: auto auto;
+      }
+
+      .hero-footer {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .flow-steps {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .links-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .qr-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      main {
+        padding-top: 20px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .hero {
+        padding: 18px 16px 16px;
+      }
+
+      .nav-links {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .nav-button {
+        justify-content: center;
+      }
+
+      .hero-title {
+        font-size: 22px;
+      }
+
+      .metric {
+        flex: 1 1 45%;
+      }
+
+      .flow-steps {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Decorative background blobs for depth -->
+  <div class="blob blob--one"></div>
+  <div class="blob blob--two"></div>
+
+  <main>
+    <header>
+      <div>
+        <div class="logo-mark">
+          <div class="logo-icon">
+            <div class="logo-inner">AI</div>
+          </div>
+          <div>
+            <div class="logo-text-main">Doctor Office Agent</div>
+            <div class="logo-text-sub">Hackathon mvp</div>
+          </div>
+        </div>
+        <div style="margin-top: 10px;">
+          <span class="tagline-chip">
+            <span class="tagline-dot"></span>
+            End-to-end WhatsApp voice → AI → Calendar automation
+          </span>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <a
+          class="nav-button primary"
+          href="http://31.14.15.82:3000"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="icon">●</span>
+          Live Doctor Dashboard
+        </a>
+        <a
+          class="nav-button"
+          href="http://31.14.15.82:5678"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="icon">⚙</span>
+          Open n8n Workflow
+        </a>
+        <a
+          class="nav-button"
+          href="https://github.com/ctrabajko"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="icon">↗</span>
+          Project GitHub
+        </a>
+      </nav>
+    </header>
+
+    <section class="layout">
+      <!-- LEFT: Hero & flow -->
+      <section class="hero">
+        <div class="hero-header">
+          <div>
+            <div class="eyebrow">
+              <span class="eyebrow-badge">24–48h hackathon build</span>
+              AI-powered, production-style architecture
+            </div>
+            <h1 class="hero-title hero-gradient-text">
+              Automating <span class="hero-highlight">doctor appointments</span><br>
+              through WhatsApp voice.
+            </h1>
+            <p class="hero-subtitle">
+              Patients simply send a <strong>WhatsApp voice note</strong>. Behind the scenes,
+              an <strong>AI agent</strong> orchestrated by <strong>n8n</strong> uses
+              <strong>OpenAI, ElevenLabs, Google Calendar</strong> and a Node.js backend to
+              <strong>understand intent, propose slots, confirm, and log appointments</strong>
+              — end-to-end.
+            </p>
+
+            <div class="hero-pill-row">
+              <div class="hero-pill">
+                <span class="hero-pill-tag"></span>
+                From audio → transcript → intent → schedule in under <strong>10 seconds</strong>.
+              </div>
+              <div class="hero-pill">
+                <span class="hero-pill-tag"></span>
+                Focused strictly on <strong>scheduling</strong>, no medical advice.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-metrics">
+          <div class="metric">
+            <div class="metric-label">Channels</div>
+            <div class="metric-value">
+              WhatsApp Voice<span>+ optional text loop</span>
+            </div>
+            <div class="metric-tag">Twilio Sandbox integration via n8n</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">AI &amp; Automation Stack</div>
+            <div class="metric-value">
+              OpenAI, ElevenLabs, n8n
+            </div>
+            <div class="metric-tag">LLM + STT + TTS + visual workflow</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Doctor View</div>
+            <div class="metric-value">
+              Live dashboard<span> + Google Calendar</span>
+            </div>
+            <div class="metric-tag">Minimal but presentation-ready UI</div>
+          </div>
+        </div>
+
+        <div class="hero-footer">
+          <div class="flow-card">
+            <div class="flow-title-row">
+              <div class="flow-title">End-to-end journey (demo-friendly)</div>
+              <div class="flow-pill">
+                <span class="flow-pill-dot"></span>
+                From patient voice to booked slot
+              </div>
+            </div>
+            <div class="flow-steps">
+              <div class="flow-step">
+                <span class="step-index">1</span>
+                <span>
+                  <strong>Patient</strong>
+                  sends a WhatsApp voice note describing date, time &amp; reason.
+                </span>
+              </div>
+              <div class="flow-step">
+                <span class="step-index">2</span>
+                <span>
+                  <strong>n8n + OpenAI</strong>
+                  transcribe the audio, extract intent &amp; constraints.
+                </span>
+              </div>
+              <div class="flow-step">
+                <span class="step-index">3</span>
+                <span>
+                  <strong>Node.js backend</strong>
+                  checks Google Calendar, proposes optimal slots, and logs them.
+                </span>
+              </div>
+              <div class="flow-step">
+                <span class="step-index">4</span>
+                <span>
+                  <strong>ElevenLabs + Twilio</strong>
+                  send back a synthetic voice + text confirmation to the patient.
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stack-card">
+            <div class="stack-heading">
+              <div class="stack-title">Tech stack</div>
+              <div class="stack-badge">MVP, but ready to evolve</div>
+            </div>
+            <div class="stack-chips">
+              <div class="stack-chip">
+                <span class="dot"></span>
+                Node.js + Express backend
+              </div>
+              <div class="stack-chip secondary">
+                <span class="dot"></span>
+                OpenAI GPT &amp; Whisper
+              </div>
+              <div class="stack-chip secondary">
+                <span class="dot"></span>
+                ElevenLabs TTS
+              </div>
+              <div class="stack-chip aux">
+                <span class="dot"></span>
+                n8n Orchestrator
+              </div>
+              <div class="stack-chip">
+                <span class="dot"></span>
+                Google Calendar API
+              </div>
+              <div class="stack-chip">
+                <span class="dot"></span>
+                Twilio WhatsApp Sandbox
+              </div>
+              <div class="stack-chip">
+                <span class="dot"></span>
+                JSON file storage (appointments.json)
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: Links, QR, demo script -->
+      <aside class="panels">
+        <section class="panel">
+          <div class="panel-inner">
+            <div class="panel-header">
+              <h2 class="panel-title">Live assets</h2>
+              <div class="panel-chip">For judges &amp; live demo</div>
+            </div>
+
+            <div class="links-grid">
+              <div class="link-card">
+                <div class="link-label">Doctor dashboard</div>
+                <div class="link-main">Appointments panel</div>
+                <div class="link-hint">Shows AI-generated bookings in real time.</div>
+                <div class="link-url">
+                  <a href="http://31.14.15.82:3000" target="_blank" rel="noopener noreferrer">
+                    http://31.14.15.82:3000
+                  </a>
+                </div>
+              </div>
+
+              <div class="link-card">
+                <div class="link-label">n8n workflow</div>
+                <div class="link-main">Automation pipeline</div>
+                <div class="link-hint">Visual flow from WhatsApp → AI → Calendar → back.</div>
+                <div class="link-url">
+                  <a href="http://31.14.15.82:5678" target="_blank" rel="noopener noreferrer">
+                    http://31.14.15.82:5678
+                  </a>
+                </div>
+              </div>
+
+              <div class="link-card">
+                <div class="link-label">Source code &amp; docs</div>
+                <div class="link-main">Hackathon project GitHub</div>
+                <div class="link-hint">Backend, docs, n8n workflow, architecture slides.</div>
+                <div class="link-url">
+                  <a href="https://github.com/ctrabajko" target="_blank" rel="noopener noreferrer">
+                    https://github.com/ctrabajko
+                  </a>
+                </div>
+              </div>
+
+              <div class="link-card">
+                <div class="link-label">Architecture presentation</div>
+                <div class="link-main">Slide-style walkthrough</div>
+                <div class="link-hint">docs/architecture_presentation.md in the repo.</div>
+                <div class="link-url">
+                  <span>Exportable as PDF for the pitch deck.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="status-pill-row">
+              <div class="status-pill">
+                <span class="status-dot"></span>
+                Backend: Node.js + Express (REST API)
+              </div>
+              <div class="status-pill">
+                <span class="status-dot neutral"></span>
+                AI: Intent extraction, slot selection, confirmations
+              </div>
+              <div class="status-pill">
+                <span class="status-dot warning"></span>
+                MVP persistence: appointments.json (swappable for DB)
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-inner">
+            <div class="panel-header">
+              <h2 class="panel-title">Live demo script</h2>
+              <div class="panel-chip">WhatsApp + QR experience</div>
+            </div>
+
+            <div class="qr-layout">
+              <div class="demo-script">
+                <div class="demo-title">Suggested flow for the presentation</div>
+                <ul class="demo-list">
+                  <li>
+                    <span class="demo-step-number">01</span>
+                    <span>
+                      Show this page to explain the <span class="demo-highlight">end-to-end architecture</span>
+                      in one glance.
+                    </span>
+                  </li>
+                  <li>
+                    <span class="demo-step-number">02</span>
+                    <span>
+                      Ask a judge to scan the QR code and send a
+                      <span class="demo-highlight">WhatsApp voice note</span> like:
+                      “I’d like an appointment next Tuesday morning around 9 or 10.”
+                    </span>
+                  </li>
+                  <li>
+                    <span class="demo-step-number">03</span>
+                    <span>
+                      Switch to <span class="demo-highlight">n8n</span> and show the workflow run:
+                      Twilio webhook → Whisper → LLM → Calendar → ElevenLabs → reply.
+                    </span>
+                  </li>
+                  <li>
+                    <span class="demo-step-number">04</span>
+                    <span>
+                      Confirm the proposed slot from WhatsApp, then reveal the
+                      <span class="demo-highlight">doctor dashboard</span> with the new appointment.
+                    </span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="qr-card">
+                <div class="qr-title">WhatsApp demo QR</div>
+                <div class="qr-image-wrapper">
+                  <!-- Random placeholder QR code. Replace the src with your own when ready. -->
+                  <img
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=HackathonDemo"
+                    alt="Placeholder QR code for WhatsApp demo"
+                  >
+                </div>
+                <p class="qr-note">
+                  <strong>Replace this QR</strong> with one pointing to your
+                  WhatsApp entry point (e.g. Twilio sandbox link or a short URL
+                  with instructions).
+                </p>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="status-pill-row">
+              <div class="status-pill">
+                <span class="status-dot"></span>
+                Voice-first UX, text works as fallback.
+              </div>
+              <div class="status-pill">
+                <span class="status-dot neutral"></span>
+                Clear separation of concerns: n8n for orchestration, backend for logic.
+              </div>
+              <div class="status-pill">
+                <span class="status-dot warning"></span>
+                Built for hackathon time constraints, but extensible to production.
+              </div>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <footer>
+    <div>
+      AI-Powered Doctor Office Appointment Automation — hackathon MVP built with
+      Node.js, OpenAI, ElevenLabs, Google Calendar and n8n.
+    </div>
+    <div>
+      Source &amp; docs:
+      <a href="https://github.com/ctrabajko" target="_blank" rel="noopener noreferrer">
+        github.com/ctrabajko
+      </a>
+    </div>
+  </footer>
+</body>
+</html>
